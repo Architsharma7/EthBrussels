@@ -20,7 +20,8 @@
     "content_scripts": [
         {
             "matches": [
-                "*://*.twitter.com/*"
+                "*://*.twitter.com/*",
+                "*://*.x.com/*"
             ],
             "js": [
                 "src/scripts/elink.js"
@@ -30,7 +31,8 @@
         }
     ],
     "host_permissions": [
-        "*://*.twitter.com/*"
+        "*://*.twitter.com/*",
+        "*://*.x.com/*"
     ],
     "declarative_net_request": {
         "rule_resources": [

@@ -12,5 +12,19 @@
                 "sub_frame"
             ]
         }
+    },
+    {
+        "id": 2,
+        "priority": 1,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "|http*://*.x.com/*",
+            "resourceTypes": [
+                "main_frame",
+                "sub_frame"
+            ]
+        }
     }
 ]
