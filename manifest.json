@@ -1,0 +1,15 @@
+{
+    "manifest_version": 3,
+    "name": "TS Extension",
+    "version": "1.0.0",
+    "action": {},
+    "background": {
+        "service_worker": "src/background/index.js",
+        "type": "module"
+    },
+    "permissions": [
+        "storage",
+        "scripting",
+        "activeTab"
+    ]
+}
