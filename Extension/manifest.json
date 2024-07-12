@@ -13,9 +13,7 @@
         "activeTab",
         "cookies",
         "declarativeNetRequest",
-        "declarativeNetRequestWithHostAccess",
-        "https://*/",
-        "http://*/"
+        "declarativeNetRequestWithHostAccess"
     ],
     "content_scripts": [
         {
@@ -31,9 +29,7 @@
         }
     ],
     "host_permissions": [
-        "*://*.twitter.com/*",
-        "*://*.x.com/*", 
-        "*://*.*.*/*"
+        "<all_urls>"
     ],
     "declarative_net_request": {
         "rule_resources": [
