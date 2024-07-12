@@ -1,3 +1,7 @@
+interface MetaTagMapping {
+  [key: string]: string;
+}
+
 // Hardcoded head tags
 const hardcodedHeadTags = {
   "https://events.xyz/events/077159": {
@@ -32,12 +36,48 @@ async function processTweet(tweetNode: HTMLElement) {
     if (linkText.startsWith("http") || linkText.startsWith("https")) {
       try {
         console.log(linkText);
-        const tags = getHardcodedTags(linkText);
-        if (tags) {
-          displayCustomContent(anchorElement, tags);
-        }
+        chrome.runtime.sendMessage(
+          { action: "fetchHTML", url: linkText },
+          (response: { html: string; error?: string }) => {
+            if (response.error) {
+              console.error("Error fetching HTML:", response.error);
+            } else {
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(response.html, "text/html");
+              const head = doc.head;
+              console.log(head);
+              const metaTagMapping: MetaTagMapping = {};
+              const fcFrameTag = head.querySelector('meta[name="fc:frame"]');
+
+              if (fcFrameTag) {
+                console.log("fc:frame tag found");
+                const ogImage = head.querySelector('meta[property="og:image"]');
+                const ogTitle = head.querySelector('meta[property="og:title"]');
+                metaTagMapping["og:image"] =
+                  ogImage?.getAttribute("content") || "";
+                metaTagMapping["og:title"] =
+                  ogTitle?.getAttribute("content") || "";
+                const fcFrameTags = head.querySelectorAll(
+                  'meta[name^="fc:frame"]'
+                );
+                fcFrameTags.forEach((tag) => {
+                  const name = tag.getAttribute("name");
+                  const content = tag.getAttribute("content");
+                  if (name && content) {
+                    metaTagMapping[name] = content;
+                  }
+                });
+
+                console.log("Meta Tag Mapping:", metaTagMapping);
+                return metaTagMapping;
+              } else {
+                console.log("No fc:frame tag found");
+              }
+            }
+          }
+        );
       } catch (error) {
-        console.error("Error processing link:", error);
+        console.error("Error sending message:", error);
       }
     }
   }
