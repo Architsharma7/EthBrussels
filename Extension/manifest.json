@@ -10,6 +10,33 @@
     "permissions": [
         "storage",
         "scripting",
-        "activeTab"
-    ]
+        "activeTab",
+        "cookies",
+        "declarativeNetRequest",
+        "declarativeNetRequestWithHostAccess"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.twitter.com/*"
+            ],
+            "js": [
+                "src/scripts/elink.js"
+            ],
+            "run_at": "document_end",
+            "type": "module"
+        }
+    ],
+    "host_permissions": [
+        "*://*.twitter.com/*"
+    ],
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+                "id": "ruleset_1",
+                "enabled": true,
+                "path": "rules.json"
+            }
+        ]
+    }
 }
