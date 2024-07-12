@@ -32,7 +32,8 @@
     ],
     "host_permissions": [
         "*://*.twitter.com/*",
-        "*://*.x.com/*"
+        "*://*.x.com/*", 
+        "*://*.*.*/*"
     ],
     "declarative_net_request": {
         "rule_resources": [

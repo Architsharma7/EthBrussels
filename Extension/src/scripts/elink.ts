@@ -8,13 +8,23 @@ async function processTweet(tweetNode: HTMLElement) {
     if (linkText.startsWith("http") || linkText.startsWith("https")) {
       try {
         console.log(linkText);
-        const response = await fetch(linkText);
+        const response = (await fetch(linkText)).headers;
         console.log("Link headers:", response);
       } catch (error) {
         console.error("Error fetching link headers:", error);
       }
     }
   }
+}
+
+function displayCustomContent(tweetNode: HTMLElement, ogImage: string | null) {
+  tweetNode.innerHTML = `
+        <div>
+          <img src="${ogImage ?? ""}" alt="OG Image">
+          <input type="text" placeholder="Enter something">
+          <button>Submit</button>
+        </div>
+      `;
 }
 
 const observer = new MutationObserver((mutations) => {
