@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "eth-link-extension",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -18,14 +18,14 @@
   "bugs": "",
   "keywords": [],
   "author": {
-    "name": "",
-    "email": "",
-    "url": ""
+    "name": ""
   },
   "contributors": [],
   "scripts": {
-    "dev": "",
-    "test": ""
+    "compile": "npx tsc",
+    "clean": "rm -rf dist",
+    "copy-assets": "rsync -av --exclude 'tsconfig.json' --exclude 'src' --exclude 'dist' ./ dist/",
+    "build" : "npm run clean && npm run compile && npm run copy-assets"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
