@@ -26,6 +26,16 @@
             ],
             "run_at": "document_end",
             "type": "module"
+        },
+        {
+            "matches": [
+                "*://*.twitter.com/*",
+                "*://*.x.com/*"
+            ],
+            "js": [
+                "src/scripts/find.js"
+            ],
+            "type": "module"
         }
     ],
     "host_permissions": [
