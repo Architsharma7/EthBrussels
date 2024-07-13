@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton+SC&family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+
+html {
+    width: 750px;
+    height: auto;
+    /* max-height: 750px; */
+    overflow-y: auto;
+    color: black;
+    background-color: #a399ff;
+    /* background-color: #000; */
+    padding: 12px;
+    box-shadow: 0 0 8px rgba(22, 22, 22, 0.5);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+.exo-2 {
+    font-family: "Exo 2", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+
+.logo {
+    width: 120px;
+    height: auto;
+}
+
+.avatar {
+    margin: 20px 0;
+    width: 50px;
+    height: auto;
+    border-radius: 100%;
+    box-shadow: 0 0 3px rgba(94, 94, 94, 0.5);
+}
+
+.img {
+    width: 250px;
+    height: auto;
+}
+
+.my-1 {
+    margin: 4px 0;
+}
+
+.flex-row {
+    display: flex;
+    flex-direction: row;
+    gap: 4;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%
+}
+
+
+.flex-row-normal {
+    display: flex;
+    flex-direction: row;
+    gap: 3;
+    justify-content: space-normal;
+    align-items: center;
+}
+
+.flex-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4;
+    justify-content: center;
+    align-items: center;
+}
+
+.icon-4 {
+    width: 24px;
+    height: auto;
+    margin-right: 8px;
+}
+
+.px-4 {
+    padding: 0 16px;
+}
+
+.header-container {
+    width: 100%;
+    height: auto;
+    /* height: 100%; */
+    background-color: white;
+    /* box-shadow: -2px 0 5px rgba(255, 255, 255, 0.5); */
+    box-shadow: inset 0 0 10px #fff;
+    border-radius: 20px;
+    padding: 24px;
+    width: 680px;
+    margin: 14px auto;
+}
+
+.semibold {
+    font-weight: 600;
+}
+
+
+.btn {
+    background-color: rgba(51, 51, 51, 0.05);
+    border-radius: 8px;
+    border-width: 0;
+    color: #333333;
+    cursor: pointer;
+    display: inline-block;
+    font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    list-style: none;
+    margin: 0;
+    padding: 10px 12px;
+    text-align: center;
+    transition: all 200ms;
+    vertical-align: baseline;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
