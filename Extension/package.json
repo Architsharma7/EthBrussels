@@ -22,10 +22,11 @@
   },
   "contributors": [],
   "scripts": {
+    "install": "sh setup.sh",
     "compile": "npx tsc",
     "clean": "rm -rf dist",
     "copy-assets": "rsync -av --exclude 'tsconfig.json' --exclude 'src' --exclude 'dist' ./ dist/",
-    "build" : "npm run clean && npm run compile && npm run copy-assets"
+    "build": "npm run clean && npm run compile && npm run copy-assets && cp src/index.html dist/src/index.html && cp -r libs dist"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",

@@ -11,3 +11,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
 });
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (
+    tab.url &&
+    changeInfo.status === "complete"
+  ) {
+    chrome.scripting.executeScript({
+      target: { tabId: tabId },
+      files: ["scripts/find.js"],
+    });
+  }
+});

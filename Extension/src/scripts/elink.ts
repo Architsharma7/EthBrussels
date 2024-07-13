@@ -271,11 +271,8 @@ function initialProcess() {
   tweetElements.forEach((tweet) => processTweet(tweet as HTMLElement));
 }
 
-// Start the process
 initializeObserver();
 initialProcess();
-
-// setInterval(initialProcess, 5000);
 
 setTimeout(() => {
   initialProcess();

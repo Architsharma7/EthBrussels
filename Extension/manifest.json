@@ -3,7 +3,8 @@
   "name": "TS Extension",
   "version": "1.0.0",
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "src/index.html"
+    // "default_popup": "popup.html"
   },
   "background": {
     "service_worker": "src/background/index.js",
@@ -34,5 +35,19 @@
         "path": "rules.json"
       }
     ]
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "libs/buffer.js",
+        "libs/base64js.min.js",
+        "libs/single-factor-auth.js",
+        "libs/ethereum-provider.js",
+        "libs/web3.min.js",
+        "libs/wallet-services-plugin.js",
+        "libs/modal.js"
+      ],
+      "matches": ["*://*.twitter.com/*", "*://*.x.com/*"]
+    }
+  ]
 }
