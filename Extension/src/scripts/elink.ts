@@ -1,8 +1,9 @@
 interface MetaTagMapping {
   [key: string]: string;
 }
+const processedLinks = new Set<string>();
 
-async function fetchFinalUrl(url:any) {
+async function fetchFinalUrl(url: any) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
       { action: "fetchHTML", url },
@@ -25,50 +26,68 @@ async function fetchFinalUrl(url:any) {
 }
 
 async function processTweet(tweetNode: HTMLElement) {
-  const links = tweetNode.querySelectorAll("a");
-  console.log("Links:", links);
-  for (let link of Array.from(links)) {
-    const anchorElement = link as HTMLAnchorElement;
-    let linkText = anchorElement.innerText;
-    let hrefText = anchorElement.href;
-    console.log("Link text:", linkText, "Href:", hrefText);
+  const linkPreview = tweetNode.querySelector('[data-testid="card.wrapper"]');
 
-    let urlToFetch;
-    if (linkText.startsWith("http") || linkText.startsWith("https")) {
-      urlToFetch = linkText;
-    } else if (
-      hrefText.startsWith("http://") ||
-      hrefText.startsWith("https://") ||
-      hrefText.startsWith("https://t.co")
-    ) {
-      urlToFetch = hrefText;
+  if (linkPreview) {
+    // If there's a link preview, process the main link and replace the entire card
+    const mainLink = linkPreview.querySelector('a[href^="https://"]');
+    if (mainLink) {
+      await processLink(mainLink as HTMLAnchorElement, tweetNode, linkPreview);
     }
+  } else {
+    // If there's no link preview, process all links in the tweet as before
+    const links = tweetNode.querySelectorAll("a");
+    for (let link of Array.from(links)) {
+      await processLink(link as HTMLAnchorElement, tweetNode);
+    }
+  }
+}
 
-    if (urlToFetch) {
-      try {
-        console.log("Fetching URL:", urlToFetch);
-        //@ts-ignore
-        if (urlToFetch?.startsWith("https://t.co")) {
-          urlToFetch = await fetchFinalUrl(urlToFetch);
-          console.log("Final URL:", urlToFetch);
-        }
-        chrome.runtime.sendMessage(
-          { action: "fetchHTML", url: urlToFetch },
-          (response: { html: string; error?: string }) => {
-            if (response.error) {
-              console.error("Error fetching HTML:", response.error);
-            } else {
-              const metaTagMapping = extractMetaTags(response.html);
-              if (Object.keys(metaTagMapping).length > 0) {
-                displayCustomContent(anchorElement, metaTagMapping);
-              }
-            }
+async function processLink(
+  anchorElement: HTMLAnchorElement,
+  tweetNode: HTMLElement,
+  linkPreviewElement?: Element
+) {
+  let hrefText = anchorElement.href;
+  const linkId = `${tweetNode.dataset.testid}-${hrefText}`;
+
+  if (processedLinks.has(linkId)) return;
+  processedLinks.add(linkId);
+
+  console.log("Processing link - Href:", hrefText);
+
+  let urlToFetch: any = hrefText;
+
+  if (urlToFetch.startsWith("https://t.co")) {
+    try {
+      urlToFetch = await fetchFinalUrl(urlToFetch);
+      console.log("Final URL:", urlToFetch);
+    } catch (error) {
+      console.error("Error fetching final URL:", error);
+      return;
+    }
+  }
+
+  try {
+    chrome.runtime.sendMessage(
+      { action: "fetchHTML", url: urlToFetch },
+      (response: { html: string; error?: string }) => {
+        if (response.error) {
+          console.error("Error fetching HTML:", response.error);
+        } else {
+          const metaTagMapping = extractMetaTags(response.html);
+          if (Object.keys(metaTagMapping).length > 0) {
+            displayCustomContent(
+              anchorElement,
+              metaTagMapping,
+              linkPreviewElement
+            );
           }
-        );
-      } catch (error) {
-        console.error("Error processing URL:", error);
+        }
       }
-    }
+    );
+  } catch (error) {
+    console.error("Error processing URL:", error);
   }
 }
 
@@ -105,15 +124,16 @@ function extractMetaTags(html: string): MetaTagMapping {
 
 function displayCustomContent(
   anchorElement: HTMLAnchorElement,
-  tags: MetaTagMapping
+  tags: MetaTagMapping,
+  linkPreviewElement?: Element
 ) {
   const container = document.createElement("div");
-  // container.style.border = "1.5px solid #2BC7AA";
   container.style.padding = "10px";
   container.style.borderRadius = "8px";
+  container.style.marginTop = "10px";
+  container.style.marginBottom = "10px";
 
   const image = tags["og:image"] || tags["fc:frame:image"];
-  // const title = tags["og:title"] || "No Title";
 
   let buttonsHtml = "";
   let buttonIndex = 1;
@@ -170,8 +190,6 @@ function displayCustomContent(
     buttonIndex++;
   }
 
-  // <h3>${title}</h3>
-
   container.innerHTML = `
     <img src="${image}" alt="Frame Image" style="max-width: 100%; height: auto; border-radius: 8px;">
     <div style="
@@ -179,12 +197,19 @@ function displayCustomContent(
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
     gap: 8px;
     width: 100%;
+    margin-top: 10px;
     ">
       ${buttonsHtml}
     </div>
   `;
 
-  anchorElement.parentNode?.replaceChild(container, anchorElement);
+  if (linkPreviewElement) {
+    // Replace the entire link preview with the frame content
+    linkPreviewElement.parentNode?.replaceChild(container, linkPreviewElement);
+  } else {
+    // If there's no link preview, replace the anchor as before
+    anchorElement.parentNode?.replaceChild(container, anchorElement);
+  }
 
   // Add event listeners to buttons
   container.querySelectorAll("button").forEach((button) => {
@@ -195,7 +220,6 @@ function displayCustomContent(
     });
   });
 }
-
 function handleButtonClick(action: string | null, target: string | null) {
   if (!action || !target) return;
 
@@ -221,10 +245,37 @@ function handleButtonClick(action: string | null, target: string | null) {
   }
 }
 
-setTimeout(() => {
-  const tweetElements = document.querySelectorAll('[data-testid="tweet"]');
-  tweetElements.forEach((tweet) => {
-    console.log("tweet", tweet);
-    processTweet(tweet as HTMLElement);
+function initializeObserver() {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (
+          node instanceof HTMLElement &&
+          node.matches('[data-testid="tweet"]')
+        ) {
+          processTweet(node);
+        }
+      });
+    });
   });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+function initialProcess() {
+  const tweetElements = document.querySelectorAll('[data-testid="tweet"]');
+  tweetElements.forEach((tweet) => processTweet(tweet as HTMLElement));
+}
+
+// Start the process
+initializeObserver();
+initialProcess();
+
+// setInterval(initialProcess, 5000);
+
+setTimeout(() => {
+  initialProcess();
 }, 2500);
