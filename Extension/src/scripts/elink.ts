@@ -2,18 +2,58 @@ interface MetaTagMapping {
   [key: string]: string;
 }
 
+async function fetchFinalUrl(url:any) {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      { action: "fetchHTML", url },
+      (response: { html: string; error?: string }) => {
+        if (response.error) {
+          reject(response.error);
+        } else {
+          const finalUrlMatch = response.html.match(
+            /location.replace\("([^"]+)"\)/
+          );
+          if (finalUrlMatch && finalUrlMatch[1]) {
+            resolve(finalUrlMatch[1]);
+          } else {
+            reject("No redirection URL found");
+          }
+        }
+      }
+    );
+  });
+}
+
 async function processTweet(tweetNode: HTMLElement) {
   const links = tweetNode.querySelectorAll("a");
   console.log("Links:", links);
   for (let link of Array.from(links)) {
     const anchorElement = link as HTMLAnchorElement;
-    const linkText = anchorElement.innerText;
-    console.log("Link text:", linkText);
+    let linkText = anchorElement.innerText;
+    let hrefText = anchorElement.href;
+    console.log("Link text:", linkText, "Href:", hrefText);
+
+    let urlToFetch;
     if (linkText.startsWith("http") || linkText.startsWith("https")) {
+      urlToFetch = linkText;
+    } else if (
+      hrefText.startsWith("http://") ||
+      hrefText.startsWith("https://") ||
+      hrefText.startsWith("https://t.co")
+    ) {
+      urlToFetch = hrefText;
+    }
+
+    if (urlToFetch) {
       try {
-        console.log(linkText);
+        console.log("Fetching URL:", urlToFetch);
+        //@ts-ignore
+        if (urlToFetch?.startsWith("https://t.co")) {
+          urlToFetch = await fetchFinalUrl(urlToFetch);
+          console.log("Final URL:", urlToFetch);
+        }
         chrome.runtime.sendMessage(
-          { action: "fetchHTML", url: linkText },
+          { action: "fetchHTML", url: urlToFetch },
           (response: { html: string; error?: string }) => {
             if (response.error) {
               console.error("Error fetching HTML:", response.error);
@@ -26,7 +66,7 @@ async function processTweet(tweetNode: HTMLElement) {
           }
         );
       } catch (error) {
-        console.error("Error sending message:", error);
+        console.error("Error processing URL:", error);
       }
     }
   }
@@ -180,24 +220,6 @@ function handleButtonClick(action: string | null, target: string | null) {
       console.log(`Unknown action: ${action}`);
   }
 }
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    mutation.addedNodes.forEach((node) => {
-      if (
-        node.nodeType === Node.ELEMENT_NODE &&
-        node instanceof HTMLElement &&
-        node.matches("article")
-      ) {
-        processTweet(node);
-      }
-    });
-  });
-});
-
-observer.observe(document.body, {
-  childList: true,
-  subtree: true,
-});
 
 setTimeout(() => {
   const tweetElements = document.querySelectorAll('[data-testid="tweet"]');
@@ -205,4 +227,4 @@ setTimeout(() => {
     console.log("tweet", tweet);
     processTweet(tweet as HTMLElement);
   });
-}, 5000);
+}, 2500);
