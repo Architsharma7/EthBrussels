@@ -1,43 +1,38 @@
 {
-    "manifest_version": 3,
-    "name": "TS Extension",
-    "version": "1.0.0",
-    "action": {},
-    "background": {
-        "service_worker": "src/background/index.js",
-        "type": "module"
-    },
-    "permissions": [
-        "storage",
-        "scripting",
-        "activeTab",
-        "cookies",
-        "declarativeNetRequest",
-        "declarativeNetRequestWithHostAccess"
-    ],
-    "content_scripts": [
-        {
-            "matches": [
-                "*://*.twitter.com/*",
-                "*://*.x.com/*"
-            ],
-            "js": [
-                "src/scripts/elink.js"
-            ],
-            "run_at": "document_end",
-            "type": "module"
-        }
-    ],
-    "host_permissions": [
-        "<all_urls>"
-    ],
-    "declarative_net_request": {
-        "rule_resources": [
-            {
-                "id": "ruleset_1",
-                "enabled": true,
-                "path": "rules.json"
-            }
-        ]
+  "manifest_version": 3,
+  "name": "TS Extension",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "src/background/index.js",
+    "type": "module"
+  },
+  "permissions": [
+    "storage",
+    "scripting",
+    "activeTab",
+    "cookies",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.twitter.com/*", "*://*.x.com/*"],
+      "js": ["src/scripts/elink.js"],
+      "run_at": "document_end",
+      "type": "module"
     }
+  ],
+  "host_permissions": ["<all_urls>"],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ruleset_1",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  }
 }
