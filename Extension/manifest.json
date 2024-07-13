@@ -1,52 +1,72 @@
 {
-  "manifest_version": 3,
-  "name": "TS Extension",
-  "version": "1.0.0",
-  "action": {
-    "default_popup": "src/index.html"
-  },
-  "background": {
-    "service_worker": "src/background/index.js",
-    "type": "module"
-  },
-  "permissions": [
-    "storage",
-    "scripting",
-    "activeTab",
-    "cookies",
-    "declarativeNetRequest",
-    "declarativeNetRequestWithHostAccess"
-  ],
-  "content_scripts": [
-    {
-      "matches": ["*://*.twitter.com/*", "*://*.x.com/*"],
-      "js": ["src/scripts/elink.js"],
-      "run_at": "document_end",
-      "type": "module"
-    }
-  ],
-  "host_permissions": ["<all_urls>"],
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "ruleset_1",
-        "enabled": true,
-        "path": "rules.json"
-      }
+    "manifest_version": 3,
+    "name": "TS Extension",
+    "version": "1.0.0",
+    "action": {
+        "default_popup": "src/index.html"
+    },
+    "background": {
+        "service_worker": "src/background/index.js",
+        "type": "module"
+    },
+    "permissions": [
+        "storage",
+        "scripting",
+        "activeTab",
+        "cookies",
+        "declarativeNetRequest",
+        "declarativeNetRequestWithHostAccess"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.twitter.com/*",
+                "*://*.x.com/*"
+            ],
+            "js": [
+                "src/scripts/elink.js"
+            ],
+            "run_at": "document_end",
+            "type": "module"
+        },
+        {
+            "matches": [
+                "*://*.twitter.com/*",
+                "*://*.x.com/*"
+            ],
+            "js": [
+                "src/scripts/find.js"
+            ],
+            "type": "module"
+        }
+    ],
+    "host_permissions": [
+        "<all_urls>"
+    ],
+    "declarative_net_request": {
+        "rule_resources": [
+            {
+                "id": "ruleset_1",
+                "enabled": true,
+                "path": "rules.json"
+            }
+        ]
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "libs/buffer.js",
+                "libs/base64js.min.js",
+                "libs/single-factor-auth.js",
+                "libs/ethereum-provider.js",
+                "libs/web3.min.js",
+                "libs/wallet-services-plugin.js",
+                "libs/modal.js"
+            ],
+            "matches": [
+                "*://*.twitter.com/*",
+                "*://*.x.com/*"
+            ]
+        }
     ]
-  },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "libs/buffer.js",
-        "libs/base64js.min.js",
-        "libs/single-factor-auth.js",
-        "libs/ethereum-provider.js",
-        "libs/web3.min.js",
-        "libs/wallet-services-plugin.js",
-        "libs/modal.js"
-      ],
-      "matches": ["*://*.twitter.com/*", "*://*.x.com/*"]
-    }
-  ]
 }

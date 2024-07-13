@@ -169,7 +169,9 @@ function displayCustomContent(
     const buttonText = tags[`fc:frame:button:${buttonIndex}`];
     const buttonAction =
       tags[`fc:frame:button:${buttonIndex}:action`] || "post";
-    const buttonTarget = tags[`fc:frame:button:${buttonIndex}:target`] || "";
+    const buttonTarget =
+      tags[`fc:frame:button:${buttonIndex}:target`] ||
+      tags[`fc:frame:post_url`];
 
     const button = document.createElement("button");
     button.setAttribute("role", "button");
@@ -215,7 +217,9 @@ function displayCustomContent(
 
     button.addEventListener("click", (e) => {
       const action = button.getAttribute("data-action");
-      const target = button.getAttribute("data-target");
+      const target = button.getAttribute("data-target") ===
+         null || undefined || "" ? tags[`fc:frame:post_url`]
+        :  button.getAttribute("data-target");
       const buttonIndex = Number(button.getAttribute("data-index"));
       handleButtonClick(action, target, container, buttonIndex);
     });
@@ -238,10 +242,8 @@ function displayCustomContent(
   `;
 
   if (linkPreviewElement) {
-    // Replace the entire link preview with the frame content
     linkPreviewElement.parentNode?.replaceChild(container, linkPreviewElement);
   } else {
-    // If there's no link preview, replace the anchor as before
     anchorElement.parentNode?.replaceChild(container, anchorElement);
   }
 }
@@ -319,7 +321,7 @@ async function postCase(
         messageBytes: "",
       },
     };
-    console.log("Signature Packet:", signaturePacket)
+    console.log("Signature Packet:", signaturePacket);
     const html = await sendPostRequest(target, signaturePacket);
     console.log("Response:", html);
     if (html) {
