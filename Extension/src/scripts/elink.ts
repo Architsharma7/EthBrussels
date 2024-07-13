@@ -145,6 +145,7 @@ function displayCustomContent(
 
     buttonsHtml += `
       <button role="button" 
+          data-index="${buttonIndex}"
           data-action="${buttonAction}"
           data-target="${buttonTarget}"
           style="
