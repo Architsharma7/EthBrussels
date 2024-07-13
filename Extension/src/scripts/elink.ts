@@ -1,6 +1,34 @@
 interface MetaTagMapping {
   [key: string]: string;
 }
+interface CastId {
+  fid: number;
+  hash: string;
+}
+
+interface UntrustedData {
+  fid: number;
+  url: string;
+  messageHash: string;
+  timestamp: number;
+  network: number;
+  buttonIndex: number;
+  inputText?: string;
+  state?: string;
+  transactionId: string;
+  address: string;
+  castId: CastId;
+}
+
+interface TrustedData {
+  messageBytes: string;
+}
+
+interface SignaturePacket {
+  untrustedData: UntrustedData;
+  trustedData: TrustedData;
+}
+
 const processedLinks = new Set<string>();
 
 async function fetchFinalUrl(url: any) {
@@ -143,62 +171,67 @@ function displayCustomContent(
       tags[`fc:frame:button:${buttonIndex}:action`] || "post";
     const buttonTarget = tags[`fc:frame:button:${buttonIndex}:target`] || "";
 
-    buttonsHtml += `
-      <button role="button" 
-          data-index="${buttonIndex}"
-          data-action="${buttonAction}"
-          data-target="${buttonTarget}"
-          style="
-              width: 100%;
-              appearance: none; 
-              background-color: #FAFBFC; 
-              border: 1px solid rgba(27, 31, 35, 0.15); 
-              border-radius: 6px; 
-              box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset; 
-              box-sizing: border-box; 
-              color: #24292E; 
-              cursor: pointer; 
-              display: inline-block; 
-              font-family: -apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'; 
-              font-size: 14px; 
-              font-weight: 500; 
-              line-height: 20px; 
-              list-style: none; 
-              padding: 6px 16px; 
-              position: relative; 
-              transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1); 
-              user-select: none; 
-              -webkit-user-select: none; 
-              touch-action: manipulation; 
-              vertical-align: middle; 
-              white-space: nowrap; 
-              word-wrap: break-word;
-              text-align: center;
-          "
-          onmouseover="this.style.backgroundColor='#F3F4F6'; this.style.transitionDuration='0.1s';"
-          onmouseout="this.style.backgroundColor='#FAFBFC'; this.style.transitionDuration='0.2s';"
-          onmousedown="this.style.backgroundColor='#EDEFF2'; this.style.boxShadow='rgba(225, 228, 232, 0.2) 0 1px 0 inset'; this.style.transition='none 0s';"
-          onmouseup="this.style.backgroundColor='#FAFBFC'; this.style.boxShadow='rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset'; this.style.transition='background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1)';"
-          onfocus="this.style.outline='1px transparent';"
-          onblur="this.style.outline='none';">
-          <span class="action-btn-shadow"></span>
-          <span class="action-btn-edge"></span>
-          <span class="action-btn-front text">
-              ${buttonText}
-          </span>
-      </button>
+    const button = document.createElement("button");
+    button.setAttribute("role", "button");
+    button.setAttribute("data-index", `${buttonIndex}`);
+    button.setAttribute("data-action", buttonAction);
+    button.setAttribute("data-target", buttonTarget);
+    button.style.width = "100%";
+    button.style.appearance = "none";
+    button.style.backgroundColor = "#FAFBFC";
+    button.style.border = "1px solid rgba(27, 31, 35, 0.15)";
+    button.style.borderRadius = "6px";
+    button.style.boxShadow =
+      "rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset";
+    button.style.boxSizing = "border-box";
+    button.style.color = "#24292E";
+    button.style.cursor = "pointer";
+    button.style.display = "inline-block";
+    button.style.fontFamily =
+      "-apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'";
+    button.style.fontSize = "14px";
+    button.style.fontWeight = "500";
+    button.style.lineHeight = "20px";
+    button.style.listStyle = "none";
+    button.style.padding = "6px 16px";
+    button.style.position = "relative";
+    button.style.transition =
+      "background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1)";
+    button.style.userSelect = "none";
+    button.style.webkitUserSelect = "none";
+    button.style.touchAction = "manipulation";
+    button.style.verticalAlign = "middle";
+    button.style.whiteSpace = "nowrap";
+    button.style.wordWrap = "break-word";
+    button.style.textAlign = "center";
+
+    button.innerHTML = `
+      <span class="action-btn-shadow"></span>
+      <span class="action-btn-edge"></span>
+      <span class="action-btn-front text">
+        ${buttonText}
+      </span>
     `;
+
+    button.addEventListener("click", (e) => {
+      const action = button.getAttribute("data-action");
+      const target = button.getAttribute("data-target");
+      const buttonIndex = Number(button.getAttribute("data-index"));
+      handleButtonClick(action, target, container, buttonIndex);
+    });
+
+    buttonsHtml += button.outerHTML;
     buttonIndex++;
   }
 
   container.innerHTML = `
     <img src="${image}" alt="Frame Image" style="max-width: 100%; height: auto; border-radius: 8px;">
     <div style="
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
-    gap: 8px;
-    width: 100%;
-    margin-top: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 8px;
+      width: 100%;
+      margin-top: 10px;
     ">
       ${buttonsHtml}
     </div>
@@ -211,17 +244,14 @@ function displayCustomContent(
     // If there's no link preview, replace the anchor as before
     anchorElement.parentNode?.replaceChild(container, anchorElement);
   }
-
-  // Add event listeners to buttons
-  container.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", (e) => {
-      const action = button.getAttribute("data-action");
-      const target = button.getAttribute("data-target");
-      handleButtonClick(action, target);
-    });
-  });
 }
-function handleButtonClick(action: string | null, target: string | null) {
+
+function handleButtonClick(
+  action: string | null,
+  target: string | null,
+  container: HTMLElement,
+  buttonIndex: number
+) {
   if (!action || !target) return;
 
   switch (action) {
@@ -229,6 +259,7 @@ function handleButtonClick(action: string | null, target: string | null) {
       window.open(target, "_blank");
       break;
     case "post":
+      postCase(target, buttonIndex, container);
     case "post_redirect":
       // Implement post action logic here
       console.log(`Performing ${action} to ${target}`);
@@ -243,6 +274,64 @@ function handleButtonClick(action: string | null, target: string | null) {
       break;
     default:
       console.log(`Unknown action: ${action}`);
+  }
+}
+
+async function sendPostRequest(url: string, signaturePacket: SignaturePacket) {
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signaturePacket),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const responseText = await response.text();
+    return responseText;
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
+  }
+}
+
+async function postCase(
+  target: string,
+  buttonIndex: number,
+  container: HTMLElement
+) {
+  try {
+    const signaturePacket: SignaturePacket = {
+      untrustedData: {
+        fid: 7,
+        url: target,
+        messageHash: "",
+        timestamp: Date.now(),
+        network: 2,
+        buttonIndex: buttonIndex,
+        transactionId: "",
+        address: "",
+        castId: { fid: 7, hash: "" },
+      },
+      trustedData: {
+        messageBytes: "",
+      },
+    };
+    console.log("Signature Packet:", signaturePacket)
+    const html = await sendPostRequest(target, signaturePacket);
+    console.log("Response:", html);
+    if (html) {
+      const metaTagMapping = extractMetaTags(html);
+      console.log("new metaTagMapping:", metaTagMapping);
+      await displayCustomContent(
+        container as unknown as HTMLAnchorElement,
+        metaTagMapping
+      );
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 
