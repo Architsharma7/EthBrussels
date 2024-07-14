@@ -4,15 +4,13 @@
     <title>Login</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+  <style>
+    html {
+      height: 800px;
+      width: 800px;
+    }
+  </style>
   <body>
-    <script src="libs/base64js.min.js"></script>
-    <!-- <script src="libs/buffer@6"></script> -->
-    <!-- <script src="libs/single-factor-auth"></script> -->
-    <script src="libs/modal"></script>
-    <script src="libs/wallet-services-plugin"></script>
-    <script src="libs/ethereum-provider"></script>
-    <script src="libs/web3.min.js"></script>
-    <script type="module" src="./script.js"></script>
     <div class="container">
       <h1 class="title">
         <a target="_blank" href="https://web3auth.io/docs/sdk/pnp/web/modal"
@@ -30,23 +28,22 @@
 
         <button id="logout" class="btn">Logout</button>
       </div>
-      <div class="console" id="console">
-        <p id="code" class="code"></p>
-      </div>
 
       <!-- Logged Logout -->
       <div class="grid btn-logged-out">
         <button id="login" class="btn">Login</button>
       </div>
-      <footer class="footer">
-        <a
-          href="https://github.com/Web3Auth/web3auth-pnp-examples/tree/main/web-modal-sdk/quick-starts/vanillajs-modal-quick-start"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Source code
-        </a>
-      </footer>
+      <div class="console" id="console">
+        <p id="code" class="code"></p>
+      </div>
     </div>
+    <script src="libs/base64js.min.js"></script>
+    <!-- <script src="libs/buffer@6"></script> -->
+    <!-- <script src="libs/single-factor-auth"></script> -->
+    <script src="libs/modal"></script>
+    <script src="libs/wallet-services-plugin"></script>
+    <script src="libs/ethereum-provider"></script>
+    <script src="libs/web3.min.js"></script>
+    <script type="module" src="./script.js"></script>
   </body>
 </html>

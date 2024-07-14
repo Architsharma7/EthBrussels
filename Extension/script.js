@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // IMP START - Dashboard Registration
     const clientId =
-      "BPi5PB_UiIZ-cPz1GtV5i1I2iOSOHuimiXBI0e-Oe_u6X3oVAbCiAZOTEBtTXw4tsluTITPqA8zMsfxIKMjiqNQ"; // get your clientId from https://dashboard.web3auth.io
+      "BCeKRAET4n5HiGCA12LxZ3BIrdBHfE3EilQKuufzR1fSveNo5Jldxx1mSkSFbZbY3jA-mn9Vb994Yx10FM_V2cQ"; // get your clientId from https://dashboard.web3auth.io
 
     const chainConfig = {
       chainNamespace: "eip155",
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
       web3auth = new window.Modal.Web3Auth({
         clientId,
         privateKeyProvider,
-        web3AuthNetwork: "sapphire_mainnet",
+        web3AuthNetwork: "sapphire_devnet",
       });
 
       // Add wallet service plugin
