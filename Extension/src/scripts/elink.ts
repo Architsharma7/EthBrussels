@@ -31,6 +31,82 @@ interface SignaturePacket {
 
 const processedLinks = new Set<string>();
 
+async function userLogin() {
+  const data = await fetchTwitterIdFromCookies();
+  const username = data?.username;
+  const twitterId = Number(data?.twitterId);
+  const userAddress = await generateWeb3AuthAddress(twitterId);
+  console.log("User Address:", userAddress);
+  if (userAddress) {
+    const txHash = await mintSubnameENS(username, userAddress);
+    console.log("Transaction Hash:", txHash);
+  }
+}
+
+async function generateWeb3AuthAddress(twitterId: number) {
+  const verifierId = `twitter|${twitterId}`;
+  const verifier = "flinkstwitter";
+  const apiURL = `https://lookup.web3auth.io/lookup?verifier=${verifier}&verifierId=${verifierId}&web3AuthNetwork=sapphire_devnet&clientId=${process.env.WEB3_AUTH_CLIENTID}`;
+
+  console.log("Fetching the EVM Pre generated address for the twitterId ...");
+  const userAddress = await chrome.storage.local.get("userAddress");
+  if (userAddress.userAddress) {
+    console.log("Address already generated for the user");
+    return userAddress.userAddress;
+  } else {
+    const response = await new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(
+        { action: "generateAddress", url: apiURL },
+        (response) => {
+          if (response && response.data) {
+            resolve(response.data);
+          } else {
+            reject(new Error("Failed to fetch data"));
+          }
+        }
+      );
+    });
+
+    const address = (response as { evmAddress?: string })?.evmAddress;
+    console.log(`evm address for the twitterId ; ${address}`);
+    await chrome.storage.local.set({ [`userAddress`]: address });
+    return address;
+  }
+}
+
+async function mintSubnameENS(
+  subname: string,
+  userAddress: string
+): Promise<string | undefined> {
+  try {
+    const usersubname = await chrome.storage.local.get("subname");
+    if (usersubname.subname) {
+      console.log("Subname already minted for the user");
+      return usersubname.subname;
+    } else {
+      console.log("Minting subname for the address ...");
+      const response = await chrome.runtime.sendMessage({
+        action: "mintSubname",
+        subname,
+        userAddress,
+      });
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      const txHash = response.txHash;
+      console.log("Transaction Hash : ", txHash);
+      console.log("Minted subname successfully");
+      await chrome.storage.local.set({ [`subname`]: subname });
+      return txHash;
+    }
+  } catch (error) {
+    console.error(error);
+    return undefined;
+  }
+}
+
 async function fetchFinalUrl(url: any) {
   return new Promise((resolve, reject) => {
     chrome.runtime.sendMessage(
@@ -52,6 +128,47 @@ async function fetchFinalUrl(url: any) {
     );
   });
 }
+
+async function fetchTwitterIdFromCookies() {
+  const BEARER_TOKEN = "";
+  const cookies = document.cookie.split("; ");
+  for (const cookie of cookies) {
+    const [name, value] = cookie.split("=");
+    if (name === "twid") {
+      const decodedValue = decodeURIComponent(value);
+      const twitterId = decodedValue.split("=")[1];
+      console.log("Twitter ID:", twitterId);
+      const url = `https://api.twitter.com/2/users/${twitterId}`;
+      try {
+        const response = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${BEARER_TOKEN}`,
+          },
+        });
+        console.log(response);
+        if (!response.ok) {
+          throw new Error(
+            `Error fetching data from Twitter API: ${response.statusText}`
+          );
+        }
+        const data = await response.json();
+        const username = data.data.username;
+        console.log("Data:", data);
+        return { username, twitterId };
+      } catch (error: any) {
+        console.error(`Error: ${error.message}`);
+      }
+    }
+  }
+  console.log("Twitter ID not found");
+}
+
+window.addEventListener("load", fetchTwitterIdFromCookies);
+document.addEventListener("readystatechange", (event) => {
+  if (document.readyState === "complete") {
+    fetchTwitterIdFromCookies();
+  }
+});
 
 async function processTweet(tweetNode: HTMLElement) {
   const linkPreview = tweetNode.querySelector('[data-testid="card.wrapper"]');
@@ -248,7 +365,6 @@ function displayCustomContent(
   }
 }
 
-
 function handleButtonClick(
   action: string | null,
   target: string | null,
@@ -278,60 +394,62 @@ function handleButtonClick(
   }
 }
 
-async function sendPostRequest(url: string, signaturePacket: SignaturePacket): Promise<string> {
+async function sendPostRequest(
+  url: string,
+  signaturePacket: SignaturePacket
+): Promise<string> {
   return new Promise((resolve, reject) => {
-      chrome.runtime.sendMessage(
-          { action: 'fetchHTMLPost', url, signaturePacket },
-          (response: { html: string; error?: string }) => {
-              if (response.error) {
-                  console.error("Error:", response.error);
-                  reject(response.error);
-              } else {
-                  resolve(response.html);
-              }
-          }
-      );
+    chrome.runtime.sendMessage(
+      { action: "fetchHTMLPost", url, signaturePacket },
+      (response: { html: string; error?: string }) => {
+        if (response.error) {
+          console.error("Error:", response.error);
+          reject(response.error);
+        } else {
+          resolve(response.html);
+        }
+      }
+    );
   });
 }
 
 async function postCase(
-target: string,
-buttonIndex: number,
-container: HTMLElement
+  target: string,
+  buttonIndex: number,
+  container: HTMLElement
 ) {
-try {
-  const signaturePacket: SignaturePacket = {
-    untrustedData: {
-      fid: 7,
-      url: target,
-      messageHash: "",
-      timestamp: Date.now(),
-      network: 2,
-      buttonIndex: buttonIndex,
-      transactionId: "",
-      address: "",
-      castId: { fid: 7, hash: "" },
-    },
-    trustedData: {
-      messageBytes: "",
-    },
-  };
-  console.log("Signature Packet:", signaturePacket);
-  const html = await sendPostRequest(target, signaturePacket);
-  console.log("Response:", html);
-  if (html) {
-    const metaTagMapping = extractMetaTags(html);
-    console.log("new metaTagMapping:", metaTagMapping);
-    await displayCustomContent(
-      container as unknown as HTMLAnchorElement,
-      metaTagMapping
-    );
+  try {
+    const signaturePacket: SignaturePacket = {
+      untrustedData: {
+        fid: 7,
+        url: target,
+        messageHash: "",
+        timestamp: Date.now(),
+        network: 2,
+        buttonIndex: buttonIndex,
+        transactionId: "",
+        address: "",
+        castId: { fid: 7, hash: "" },
+      },
+      trustedData: {
+        messageBytes: "",
+      },
+    };
+    console.log("Signature Packet:", signaturePacket);
+    const html = await sendPostRequest(target, signaturePacket);
+    console.log("Response:", html);
+    if (html) {
+      const metaTagMapping = extractMetaTags(html);
+      console.log("new metaTagMapping:", metaTagMapping);
+      await displayCustomContent(
+        container as unknown as HTMLAnchorElement,
+        metaTagMapping
+      );
+    }
+  } catch (error) {
+    console.log(error);
   }
-} catch (error) {
-  console.log(error);
 }
-}
-
 
 function initializeObserver() {
   const observer = new MutationObserver((mutations) => {
