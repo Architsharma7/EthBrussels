@@ -23,3 +23,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     });
   }
 });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'fetchHTMLPost') {
+      fetch(message.url, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify(message.signaturePacket),
+      })
+      .then(response => response.text())
+      .then(html => sendResponse({ html }))
+      .catch(error => sendResponse({ error: error.message }));
+      return true; 
+  }
+});

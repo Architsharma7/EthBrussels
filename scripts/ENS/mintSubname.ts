@@ -57,8 +57,7 @@ const walletClient = createWalletClient({
 // const namespaceContractAddress = "0x2674E4FAe872780F01B99e109E67749B765703fB";
 const namewrapperContractAddress = "0x0635513f179D50A207757E05759CbD106d7dFcE8";
 
-async function main() {
-  //   return keccak256(abi.encodePacked(node, labelhash));
+export async function mintSubname(subName: string, userAddress: `0x${string}`) {
   const ETHNODE =
     "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae";
   const parentENSName = "flinks";
@@ -69,8 +68,8 @@ async function main() {
     encodePacked(["bytes", "bytes"], [ETHNODE, parentNameHash])
   );
 
-  const subName = "0xdhruva";
-  const userAddress = "0x62C43323447899acb61C18181e34168903E033Bf";
+  // const subName = "0xdhruva";
+  // const userAddress = "0x62C43323447899acb61C18181e34168903E033Bf";
   const timestamp = Math.floor(Date.now() / 1000);
 
   // 1 years
@@ -86,8 +85,9 @@ async function main() {
   });
 
   const hash = await walletClient.writeContract(request);
-  const tx = await publicClient.waitForTransactionReceipt({ hash: hash });
-  console.log(tx);
-}
 
-main();
+  // const tx = await publicClient.waitForTransactionReceipt({ hash: hash });
+  // console.log(tx);
+
+  return hash;
+}
