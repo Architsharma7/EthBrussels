@@ -12,58 +12,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action == "generateAddress") {
-    fetch(request.url)
-      .then((response) => response.json())
-      .then((data) => sendResponse({ data: data }))
-      .catch((error) => {
-        sendResponse({ error: error.message });
-      });
-      return true;
-  }
-});
+// chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+//   if (request.action == "generateAddress") {
+//     fetch(request.url)
+//       .then((response) => response.json())
+//       .then((data) => sendResponse({ data: data }))
+//       .catch((error) => {
+//         sendResponse({ error: error.message });
+//       });
+//       return true;
+//   }
+// });
 
-const BACKEND_API = "http://localhost:3010";
+// chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+//   if (message.action === 'mintSubname') {
+//     mintSubname(message.subname, message.userAddress)
+//       .then(txHash => sendResponse({ txHash }))
+//       .catch(error => sendResponse({ error: error.message }));
+//     return true;
+//   }
+// });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'mintSubname') {
-    mintSubname(message.subname, message.userAddress)
-      .then(txHash => sendResponse({ txHash }))
-      .catch(error => sendResponse({ error: error.message }));
-    return true; 
-  }
-});
-
-async function mintSubname(subname: string, userAddress: string): Promise<string> {
-  console.log("Sending subname mint request to the backend API ...");
-  const response = await fetch(`${BACKEND_API}/create/subname`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      subName: subname,
-      userAddress: userAddress,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-
-  const data = await response.json();
-  return data.hash;
-}
-
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (tab.url && changeInfo.status === "complete") {
-    chrome.scripting.executeScript({
-      target: { tabId: tabId },
-      files: ["scripts/find.js"],
-    });
-  }
-});
+// chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+//   if (tab.url && changeInfo.status === "complete") {
+//     chrome.scripting.executeScript({
+//       target: { tabId: tabId },
+//       files: ["scripts/find.js"],
+//     });
+//   }
+// });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "fetchHTMLPost") {

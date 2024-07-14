@@ -95,6 +95,30 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
+  function updateUI(userData) {
+    document.getElementById("username").textContent = userData.username;
+    document.getElementById("walletAddress").textContent =
+      userData.walletAddress;
+    document.getElementById(
+      "avatarImg"
+    ).src = `https://noun-api.com/beta/pfp?name=${userData.username}`;
+  }
+
+  async function fetchUserData() {
+    const user = await web3auth.getUserInfo();
+    const userData = {
+      username: user.username,
+      walletAddress: user.walletAddress,
+    };
+    uiConsole("kushagra userData", userData);
+    updateUI(userData);
+  }
+
+  // setTimeout(() => {
+  //   uiConsole("fetchUserData");
+  //   fetchUserData();
+  // }, 2000);
+
   document
     .getElementById("get-accounts")
     .addEventListener("click", async function (event) {
