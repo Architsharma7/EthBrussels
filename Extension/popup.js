@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
       userData.walletAddress;
     document.getElementById(
       "avatarImg"
-    ).src = `https://robohash.org/${userData.username}`;
+    ).src = `https://noun-api.com/beta/pfp?name=${userData.username}`;
   }
 
   function fetchUserData() {
